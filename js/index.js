@@ -15,30 +15,13 @@ $(document).ready(function() {
     data.addColumn('number', 'color'); 
     data.addColumn('number', 'value', 'value'); 
     data.addColumn({type:'string', role:'tooltip'});
-    for (i = 1; i < 2; i++) {
-      $.ajax({
-        url: "http://api.kivaws.org/v1/loans/newest.json?page=" + i.toString(),
-        success: function(result) {
-          var loanList = result['loans'];
-          _.each(loanList, function(loan) {
-              geoCoord = loan['location']['geo']['pairs'];
-              geoCoord = geoCoord.split(" ");
-              latitude = parseFloat(geoCoord[0]);
-              longitude = parseFloat(geoCoord[1]);
-              data.addRows([[latitude, longitude, loan['name'], 2, parseInt(loan['id']), loan['use']]]);
-          });
-        },
-        async: false
-      });
-    }
 
     options = {
       displayMode: 'markers', 
-      legend: 'none',
       enableRegionInteractivity: 'false',
       backgroundColor: '#73CBFF',
-      sizeAxis: {minSize:5,  maxSize: 5},
-      colorAxis: {minValue: 1, maxValue:3,  colors: ['#00853f', '#e31b23']}
+      sizeAxis: {minSize:8,  maxSize: 8},
+      colorAxis: {minValue: 1, maxValue:5, colors: ['white', 'green']}
     };
 
   chart = new google.visualization.GeoChart(document.getElementsByClassName("chart_div")[0]);
@@ -98,7 +81,6 @@ $(document).ready(function() {
     $(".right-col").append("<div class=\"name\"><h1>" + lender['name'] + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + lender['whereabouts'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">Loans made: " + lender['loan_count'] + "</div>");
-    // $(".right-col").append("<div class=\"funding\">$" + loan['funded_amount'] + "/$" + loan['loan_amount'] + " funded</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + lender['occupational_info'] + "</div>");
     var id = document.getElementById('id').value;
     $.ajax({
@@ -107,11 +89,35 @@ $(document).ready(function() {
           $(".visualizations").empty();
           $(".visualizations").append("<div id=\"sectorpiechart\"></div>");
           $(".visualizations").append("<div id=\"loanstatuspiechart\"></div>");
+          populateLenderMap(result);
           generateLenderGraphs(result);
         },
         async: false
       });
-    
+
+  }
+
+  function populateLenderMap(result) {
+    var loans = result['loans'];
+    data = new google.visualization.DataTable();
+
+    data.addColumn('number', 'latitude');                                
+    data.addColumn('number', 'longitude');
+    data.addColumn('string', 'name');
+    data.addColumn('number', 'color'); 
+    data.addColumn('number', 'value', 'value'); 
+    data.addColumn({type:'string', role:'tooltip'});
+
+    _.each(loans, function(loan) {
+        geoCoord = loan['location']['geo']['pairs'];
+        geoCoord = geoCoord.split(" ");
+        latitude = parseFloat(geoCoord[0]);
+        longitude = parseFloat(geoCoord[1]);
+        impact = (Math.random() * 5) + 1;
+        data.addRows([[latitude, longitude, loan['name'], impact, parseInt(loan['id']), loan['use']]]);
+    });
+
+    chart.draw(data, options);
   }
 
   function generateLenderGraphs(result) {
