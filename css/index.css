@@ -1,8 +1,9 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #73CBFF;
+  background-color: #fff;
   margin-top: -125px;
+  font-family: 'Lato', sans-serif;
 }
 
 .nav_container {
@@ -39,4 +40,43 @@ body {
   margin: 0 auto;
   padding: 4px;
   border: 1px solid #000;
+}
+
+.info {
+  background-color: #fff;
+  width: 80%;
+  padding-top: 20px;
+  padding-left: 10%;
+  padding-right: 10%;
+  padding-bottom: 20px;
+}
+
+.left-col {
+  width: 18%;
+  padding: 1%;
+  float: left;
+}
+
+.user-image img {
+  border-radius: 16px;
+  margin: 0 auto;
+}
+
+.name h1 {
+  margin: 0;
+  color: #2b2b2b;
+}
+
+.town-country {
+  color: #6A6A6A;
+}
+
+.use {
+  color: #333333;
+}
+
+.right-col {
+  width: 78%;
+  padding: 1%;
+  float: right;
 }
