@@ -11,8 +11,8 @@
     <div class = "nav_container">
       <div class = "nav">
         <form action="#">
-          <input class ="search_bar" type="text" name="fname" placeholder="Enter your Kiva lender ID">
-          <input type="submit" value="Go">
+          <input class ="search_bar" type="text" id="id" name="kivaID" placeholder="Enter your Kiva lender ID">
+          <input id="go" type="button" value="Go" onclick="showLender()" />
         </form>
       </div>
     </div> 
@@ -20,6 +20,7 @@
     <div class="info">
       <div class="left-col"></div>
       <div class="right-col"></div>
+      <div class="visualizations"></div>
     </div>
   </body>
 </html>

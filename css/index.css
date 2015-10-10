@@ -71,7 +71,7 @@ body {
   color: #6A6A6A;
 }
 
-.use {
+.user-info-line {
   color: #333333;
 }
 
@@ -79,4 +79,15 @@ body {
   width: 78%;
   padding: 1%;
   float: right;
+}
+
+.visualizations {
+  width: 100%;
+  clear: both;
+}
+
+#sectorpiechart, #loanstatuspiechart {
+  width: 900px;
+  height: 500px;
+  margin: 0 auto;
 }
