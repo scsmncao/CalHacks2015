@@ -1,6 +1,24 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.feature {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1px;
+      stroke-linejoin: round;
+  }
+
+.mesh {
+  fill: none;
+    stroke: lightgrey;
+    stroke-width: 2px;
+    stroke-linejoin: round;
+}
+
 #map {
       background-color: #fff;
-      border: 1px solid #ccc;
     }
 .background {
   fill: none;
@@ -23,7 +41,6 @@
   stroke: #fff;
 }
 pre.prettyprint {
-  border: 1px solid #ccc;
   margin-bottom: 0;
-  padding: 9.5px;
+  padding: 0;
 }

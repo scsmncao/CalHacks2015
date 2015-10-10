@@ -1,26 +1,34 @@
 $(document).ready(function() {
+
     var m_width = $("#map").width(),
             width = 938,
             height = 500,
             country,
             state;
+
     var projection = d3.geo.mercator()
         .scale(150)
         .translate([width / 2, height / 1.5]);
+
     var path = d3.geo.path()
         .projection(projection);
+
     var svg = d3.select("#map").append("svg")
         .attr("preserveAspectRatio", "xMidYMid")
         .attr("viewBox", "0 0 " + width + " " + height)
         .attr("width", m_width)
         .attr("height", m_width * height / width);
+
     svg.append("rect")
         .attr("class", "background")
         .attr("width", width)
         .attr("height", height)
         .on("click", country_clicked);
     var g = svg.append("g");
+
     d3.json("../json/countries.topo.json", function(error, us) {
+      aa = [-122.490402, 37.786453];
+      bb = [-122.389809, 37.72728];
       g.append("g")
         .attr("id", "countries")
         .selectAll("path")
@@ -30,6 +38,21 @@ $(document).ready(function() {
         .attr("id", function(d) { return d.id; })
         .attr("d", path)
         .on("click", country_clicked);
+
+      d3.csv("data/cities.csv", function(error, data) {
+      g.selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("cx", function(d) {
+              return projection([d.lon, d.lat])[0];
+      })
+      .attr("cy", function(d) {
+              return projection([d.lon, d.lat])[1];
+      })
+      .attr("r", 5)
+      .style("fill", "red");
+      
     });
     function zoom(xyz) {
       g.transition()
