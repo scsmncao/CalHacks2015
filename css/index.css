@@ -15,9 +15,9 @@ body {
   z-index: 99;
   
 /*  visibility: hidden; */
-/*  -webkit-box-shadow: 0px 0px 5px 0px #505050;
+  -webkit-box-shadow: 0px 0px 5px 0px #505050;
   -moz-box-shadow: 0px 0px 5px 0px #505050;
-  box-shadow: 0px 0px 5px 0px #505050;*/
+  box-shadow: 0px 0px 5px 0px #505050;
 }
 
 .nav {
@@ -50,12 +50,17 @@ body {
 
 }
 
+input:focus, select:focus, textarea:focus, button:focus {
+    outline: none;
+}
+
 .search_bar {
   width: 300px;
   height: 30px;
   margin: 0 auto;
-  padding: 4px;
-  border: 1px solid #000;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 16px;
 }
 
 .info {
@@ -75,7 +80,6 @@ body {
 }
 
 .user-image img {
-/*   background-color: #f00; */
   border-radius: 16px;
   margin: 0 auto;
 }
@@ -107,6 +111,6 @@ body {
 
 #sectorpiechart, #loanstatuspiechart, #sectorimpactchart {
   width: 900px;
-  height: 500px;
+  height: 400px;
   margin: 0 auto;
 }

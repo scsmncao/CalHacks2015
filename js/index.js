@@ -77,7 +77,7 @@ $(document).ready(function() {
     var loan = result['loans'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
-    $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + "</h1></div>");
+    $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + round(calcImpact(loan['loan_amount'], 1400)) + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">$" + loan['funded_amount'] + "/$" + loan['loan_amount'] + " funded</div>");
@@ -300,6 +300,7 @@ $(document).ready(function() {
 
     for (i = 1; i < sectorImpact.length; i++) {
       sectorImpact[i][1] /= sectorCount[i][1];
+      sectorImpact[i][1] = round(sectorImpact[i][1]);
     }
 
     var sectorPieData = google.visualization.arrayToDataTable(sectorCount);
@@ -311,7 +312,7 @@ $(document).ready(function() {
 
     var sectorImpactData = google.visualization.arrayToDataTable(sectorImpact);
     var sectorImpactOptions = {
-      title: 'Average Impact per Sector',
+      title: 'Average Impact by Sector',
       legend: { position: "none" }
     };
     var sectorImpactPieChart = new google.visualization.BarChart(document.getElementById("sectorimpactchart"));
@@ -328,5 +329,9 @@ $(document).ready(function() {
   window.onresize = function(event) {
     chart.draw(data, options);
   };
+
+  function round(num) {
+    return Math.round(num * 100) / 100
+  }
 
 });
