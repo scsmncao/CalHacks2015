@@ -2,69 +2,9 @@
   <head>
     <script src="js/jquery-2.1.4.min.js"></script> 
     <script src="js/underscore-min.js"></script>
-    <script src="js/index.js"></script>
     <script src="https://www.google.com/jsapi"></script>
+    <script src="js/index.js"></script>
     <link rel="stylesheet" type="text/css" href="css/index.css">
-    <script>
-      google.load('visualization', '1', {'packages': ['geochart']});
-  google.setOnLoadCallback(drawMap);
-  
-  function drawMap() {
-
-    var data = new google.visualization.DataTable();
-
-    data.addColumn('number', 'latitude');                                
-    data.addColumn('number', 'longitude');
-    data.addColumn('string', 'name'); 
-    data.addColumn('number', 'value', 'value'); 
-    data.addColumn({type:'string', role:'tooltip'});
-    for (i = 1; i < 2; i++) {
-      $.ajax({
-        url: "http://api.kivaws.org/v1/loans/newest.json?page=" + i.toString(),
-        success: function(result) {
-          var loanList = result['loans'];
-          _.each(loanList, function(loan) {
-              geoCoord = loan['location']['geo']['pairs'];
-              geoCoord = geoCoord.split(" ");
-              latitude = parseFloat(geoCoord[0]);
-              longitude = parseFloat(geoCoord[1]);
-              data.addRows([[latitude, longitude, loan['name'], parseInt(loan['id']), loan['use']]]);
-          });
-        },
-        async: false
-      });
-    }
-
-    var options = {
-      displayMode: 'markers', 
-      legend: 'none',
-      enableRegionInteractivity: 'true',
-      backgroundColor: '#73CBFF',
-      sizeAxis: {minSize:5,  maxSize: 5},
-      colorAxis: {minValue: 1, maxValue:1,  colors: ['#B92B3D']
-
-    }
-  };
-
-  var chart = new google.visualization.GeoChart(document.getElementById('chart_div'));
-
-  google.visualization.events.addListener(chart, 'select', function() {
-      var selectionIdx = chart.getSelection()[0].row;
-      var markerName = data.getValue(selectionIdx, 2);
-      var id = data.getValue(selectionIdx, 3);
-      $.ajax({
-        url:"http://api.kivaws.org/v1/loans/" + id.toString() + ".json",
-        success: function(result) {
-          $(".info").empty();
-          $(".info").append("<h1>" + result['loans'][0]['name'] + "</h1>");
-        },
-        async: false
-      });
-  });
-  
-  chart.draw(data, options);
-  };
-    </script>
   </head>
   <body>
     <div class = "nav_container">
@@ -77,7 +17,14 @@
     </div> 
     <div id="chart_div"></div>
     <div class="info">
-
+      <div class="user-image">
+      </div>
+      <div class="name">
+      </div>
+      <div class="town-country">
+      </div>
+      <div class="use">
+      </div>
     </div>
   </body>
 </html>
