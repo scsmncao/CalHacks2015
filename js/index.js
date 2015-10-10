@@ -82,6 +82,10 @@ $(document).ready(function() {
     $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">$" + loan['funded_amount'] + "/$" + loan['loan_amount'] + " funded</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + loan['use'] + "</div>");
+
+    // $(".visualizations").empty();
+    // $(".visualizations").append("<div id=\"sectorpiechart\"></div>");
+    // $(".visualizations").append("<div id=\"loanstatuspiechart\"></div>");
     
   }
 
@@ -99,6 +103,7 @@ $(document).ready(function() {
         success: function(result) {
           $(".visualizations").empty();
           $(".visualizations").append("<div id=\"sectorpiechart\"></div>");
+          $(".visualizations").append("<div id=\"sectorimpactchart\"></div>");
           $(".visualizations").append("<div id=\"loanstatuspiechart\"></div>");
           populateLenderMap(result);
           generateLenderGraphs(result);
@@ -124,17 +129,57 @@ $(document).ready(function() {
         geoCoord = geoCoord.split(" ");
         latitude = parseFloat(geoCoord[0]);
         longitude = parseFloat(geoCoord[1]);
-        impact = (Math.random() * 5) + 1;
+        
+        impact = calcImpact(loan['loan_amount'], 2500);
         data.addRows([[latitude, longitude, loan['name'], impact, parseInt(loan['id']), loan['use']]]);
     });
 
     chart.draw(data, options);
   }
 
+  // Clothing, entertainment, manufacturing, retail, services
+  function calcImpact(loan_amount, gni_per_capita) {
+    gni_score = 0;
+    if (gni_per_capita < 1045) {
+      gni_score = 4;
+    } else if (gni_per_capita < 4125) {
+      gni_score = 3;
+    } else if (gni_per_capita < 12735) {
+      gni_score = 2;
+    } else {
+      gni_score = 1;
+    }
+
+    return Math.min((loan_amount/gni_per_capita) * gni_score, 5);
+  }
+
+  function scale(low, high) {
+
+  }
+
   function generateLenderGraphs(result) {
     var loans = result['loans'];
     var sectorCount = [
       ["Sector", "Number of Loans"],
+      ["Agriculture", 0],
+      ["Arts", 0],
+      ["Clothing", 0],
+      ["Construction", 0],
+      ["Education", 0],
+      ["Entertainment", 0],
+      ["Food", 0],
+      ["Health", 0],
+      ["Housing", 0],
+      ["Manufacturing", 0],
+      ["Personal Use", 0],
+      ["Retail", 0],
+      ["Services", 0],
+      ["Transportation", 0],
+      ["Wholesale", 0]
+    ];
+
+    var sectorImpact = [
+      ["Sector", "Average Impact"],
       ["Agriculture", 0],
       ["Arts", 0],
       ["Clothing", 0],
@@ -168,48 +213,63 @@ $(document).ready(function() {
       switch (sector) {
         case "Agriculture":
           sectorCount[1][1]++;
+          sectorImpact[1][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Arts":
           sectorCount[2][1]++;
+          sectorImpact[2][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Clothing":
           sectorCount[3][1]++;
+          sectorImpact[3][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Construction":
           sectorCount[4][1]++;
+          sectorImpact[4][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Education":
           sectorCount[5][1]++;
+          sectorImpact[5][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Entertainment":
           sectorCount[6][1]++;
+          sectorImpact[6][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Food":
           sectorCount[7][1]++;
+          sectorImpact[7][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Health":
           sectorCount[8][1]++;
+          sectorImpact[8][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Housing":
           sectorCount[9][1]++;
+          sectorImpact[9][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Manufacturing":
           sectorCount[10][1]++;
+          sectorImpact[10][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Personal Use":
           sectorCount[11][1]++;
+          sectorImpact[11][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Retail":
           sectorCount[12][1]++;
+          sectorImpact[12][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Services":
           sectorCount[13][1]++;
+          sectorImpact[13][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Transportation":
           sectorCount[14][1]++;
+          sectorImpact[14][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         case "Wholesale":
           sectorCount[15][1]++;
+          sectorImpact[1][1] += calcImpact(loan['loan_amount'], 1400);
           break;
         default:
           console.log("sector doesn't match any found");
@@ -238,12 +298,24 @@ $(document).ready(function() {
       }   
     });
 
+    for (i = 1; i < sectorImpact.length; i++) {
+      sectorImpact[i][1] /= sectorCount[i][1];
+    }
+
     var sectorPieData = google.visualization.arrayToDataTable(sectorCount);
     var sectorPieOptions = {
       title: 'Loan Allocation'
     };
     var sectorPieChart = new google.visualization.PieChart(document.getElementById('sectorpiechart'));
     sectorPieChart.draw(sectorPieData, sectorPieOptions);
+
+    var sectorImpactData = google.visualization.arrayToDataTable(sectorImpact);
+    var sectorImpactOptions = {
+      title: 'Average Impact per Sector',
+      legend: { position: "none" }
+    };
+    var sectorImpactPieChart = new google.visualization.BarChart(document.getElementById("sectorimpactchart"));
+    sectorImpactPieChart.draw(sectorImpactData, sectorImpactOptions);
 
     var loanStatusData = google.visualization.arrayToDataTable(loanStatusCount);
     var loanStatusOptions = {
