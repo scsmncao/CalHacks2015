@@ -41,8 +41,9 @@ $(document).ready(function() {
       colorAxis: {minValue: 1, maxValue:3,  colors: ['#00853f', '#e31b23']}
     };
 
-  chart = new google.visualization.GeoChart(document.getElementById('chart_div'));
-
+  chart = new google.visualization.GeoChart(document.getElementsByClassName("chart_div")[0]);
+  //chart = new google.visualization.GeoChart($(".chart_div"));
+  
   google.visualization.events.addListener(chart, 'select', function() {
       var selectionIdx = chart.getSelection()[0].row;
       var markerName = data.getValue(selectionIdx, 2);

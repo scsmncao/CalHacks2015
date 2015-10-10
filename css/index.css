@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #fff;
-  margin-top: -125px;
+  margin-top: 0px;
   font-family: 'Lato', sans-serif;
 }
 
@@ -13,6 +13,8 @@ body {
   height: 50px;
   background-color: #ffffff;
   z-index: 99;
+  
+/*  visibility: hidden; */
 /*  -webkit-box-shadow: 0px 0px 5px 0px #505050;
   -moz-box-shadow: 0px 0px 5px 0px #505050;
   box-shadow: 0px 0px 5px 0px #505050;*/
@@ -34,6 +36,24 @@ body {
   width: 100%;
 }
 
+.chart_container{
+	position: relative;
+	width: 100%;
+	height-min: 500px;
+	padding-bottom: 56.25%;
+
+}
+.chart_container > div {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+
+}
+.chart_div{
+
+}
+
+
 .search_bar {
   width: 300px;
   height: 30px;
@@ -52,12 +72,14 @@ body {
 }
 
 .left-col {
-  width: 18%;
+/*   background-color: #f00; */
+  /* width: 18%; */
   padding: 1%;
   float: left;
 }
 
 .user-image img {
+/*   background-color: #f00; */
   border-radius: 16px;
   margin: 0 auto;
 }
@@ -76,7 +98,8 @@ body {
 }
 
 .right-col {
-  width: 78%;
+/*   background-color: #0f0; */
+  width: 50%;
   padding: 1%;
   float: right;
 }
