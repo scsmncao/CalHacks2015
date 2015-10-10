@@ -1,5 +1,13 @@
 google.load('visualization', '1', {'packages': ['geochart', 'corechart']});
 $(document).ready(function() {
+
+  $('.search_bar').keyup(function(event) {
+        if (event.keyCode == 13) {
+            showLender();
+            return false;
+         }
+    });
+
   google.setOnLoadCallback(drawMap);
   var chart;
   var data;
@@ -20,6 +28,7 @@ $(document).ready(function() {
       displayMode: 'markers', 
       enableRegionInteractivity: 'false',
       backgroundColor: '#73CBFF',
+      defaultColor: '#f5f5f5',
       sizeAxis: {minSize:8,  maxSize: 8},
       colorAxis: {minValue: 1, maxValue:5, colors: ['white', 'green']}
     };
@@ -41,6 +50,10 @@ $(document).ready(function() {
         },
         async: false
       });
+      
+      $('html:not(:animated), body:not(:animated)').animate({
+          scrollTop: $("#info").offset().top
+      }, 1500);
   });
   
   chart.draw(data, options);
@@ -64,7 +77,6 @@ $(document).ready(function() {
     var loan = result['loans'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
-
     $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
@@ -77,7 +89,6 @@ $(document).ready(function() {
     var lender = result['lenders'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + lender['image']['id'] + ".jpg\"></img></div>");
-
     $(".right-col").append("<div class=\"name\"><h1>" + lender['name'] + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + lender['whereabouts'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">Loans made: " + lender['loan_count'] + "</div>");
