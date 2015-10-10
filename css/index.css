@@ -2,8 +2,10 @@ body {
   margin: 0;
   padding: 0;
   background-color: #73CBFF;
+  margin-top: -125px;
 }
 
 #map {
-  width: 400px;
+  width: 100%;
+
 }
