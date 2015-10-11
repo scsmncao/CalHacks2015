@@ -34,7 +34,6 @@ $(document).ready(function() {
     };
 
   chart = new google.visualization.GeoChart(document.getElementsByClassName("chart_div")[0]);
-  //chart = new google.visualization.GeoChart($(".chart_div"));
   
   google.visualization.events.addListener(chart, 'select', function() {
       var selectionIdx = chart.getSelection()[0].row;
@@ -59,6 +58,69 @@ $(document).ready(function() {
   chart.draw(data, options);
   };
 
+  function appendUserInfo(result) {
+    var loan = result['loans'][0];
+
+    $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
+    $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + round(calculateImpact(loan)) + "</h1></div>");
+    $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
+    $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
+    $(".right-col").append("<div class=\"user-info-line\">$" + loan['funded_amount'] + "/$" + loan['loan_amount'] + " funded</div>");
+    $(".right-col").append("<div class=\"user-info-line\">" + loan['use'] + "</div>");
+
+    $(".visualizations").empty();
+    
+    if (loan['sector'] == "Education") {
+      $(".visualizations").append("<div class=\"infochart\" id=\"litratelinegraph\"></div>");
+      generateUserLiteracyRateLineGraph(result);
+    }
+
+    $(".visualizations").append("<div class=\"infochart\" id=\"gnilinegraph\"></div>");
+    generateUserGNILineGraph(result);
+  }
+
+  function generateUserGNILineGraph(result) {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Year');                                
+    data.addColumn('number', 'Country');
+    data.addColumn('number', 'World');
+
+    for (i = 2000; i < 2015; i++) {
+      data.addRows([[i.toString(), Math.floor((Math.random() * 1600) + 400), Math.floor((Math.random() * 1000) + 3000)]]);
+    }
+
+    var options = {
+          title: 'Gross National Income per Capita vs. World Average',
+          curveType: 'function',
+          vAxis: { title: "USD (2005) per Capita" },
+          legend: { position: 'right' }
+        };
+
+    var chart = new google.visualization.LineChart(document.getElementById('gnilinegraph'));
+    chart.draw(data, options);
+  }
+
+  function generateUserLiteracyRateLineGraph(result) {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Year');                                
+    data.addColumn('number', 'Country');
+    data.addColumn('number', 'World');
+
+    for (i = 2000; i < 2015; i++) {
+      data.addRows([[i.toString(), Math.floor((Math.random() * 10) + 60), Math.floor((Math.random() * 10) + 70)]]);
+    }
+
+    var options = {
+          title: 'Literacy Rate vs. World Average',
+          vAxis: { title: "Percent" },
+          curveType: 'function',
+          legend: { position: 'right' }
+        };
+
+    var chart = new google.visualization.LineChart(document.getElementById('litratelinegraph'));
+    chart.draw(data, options);
+  }
+
   function showLender() {
     var id = document.getElementById('id').value;
     $.ajax({
@@ -71,22 +133,6 @@ $(document).ready(function() {
         },
         async: false
       });
-  }
-
-  function appendUserInfo(result) {
-    var loan = result['loans'][0];
-
-    $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
-    $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + round(calcImpact(loan['loan_amount'], 1400)) + "</h1></div>");
-    $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
-    $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
-    $(".right-col").append("<div class=\"user-info-line\">$" + loan['funded_amount'] + "/$" + loan['loan_amount'] + " funded</div>");
-    $(".right-col").append("<div class=\"user-info-line\">" + loan['use'] + "</div>");
-
-    // $(".visualizations").empty();
-    // $(".visualizations").append("<div id=\"sectorpiechart\"></div>");
-    // $(".visualizations").append("<div id=\"loanstatuspiechart\"></div>");
-    
   }
 
   function appendLenderInfo(result) {
@@ -102,10 +148,10 @@ $(document).ready(function() {
         url:"http://api.kivaws.org/v1/lenders/" + id.toString() + "/loans.json",
         success: function(result) {
           $(".visualizations").empty();
-          $(".visualizations").append("<div id=\"sectorpiechart\"></div>");
-          $(".visualizations").append("<div id=\"sectorimpactchart\"></div>");
-          $(".visualizations").append("<div id=\"loanstatuspiechart\"></div>");
-          populateLenderMap(result);
+          $(".visualizations").append("<div class=\"infochart\" id=\"sectorpiechart\"></div>");
+          $(".visualizations").append("<div class=\"infochart\" id=\"sectorimpactchart\"></div>");
+          $(".visualizations").append("<div class=\"infochart\" id=\"loanstatuspiechart\"></div>");
+          populateLoanMap(result);
           generateLenderGraphs(result);
         },
         async: false
@@ -113,7 +159,7 @@ $(document).ready(function() {
 
   }
 
-  function populateLenderMap(result) {
+  function populateLoanMap(result) {
     var loans = result['loans'];
     data = new google.visualization.DataTable();
 
@@ -129,32 +175,93 @@ $(document).ready(function() {
         geoCoord = geoCoord.split(" ");
         latitude = parseFloat(geoCoord[0]);
         longitude = parseFloat(geoCoord[1]);
-        
-        impact = calcImpact(loan['loan_amount'], 2500);
-        data.addRows([[latitude, longitude, loan['name'], impact, parseInt(loan['id']), loan['use']]]);
+        impact = calculateImpact(loan);
+
+        tooltip = loan['location']['town'] + ", " + loan['location']['country'] + "\n" + loan['use']; 
+        data.addRows([[latitude, longitude, loan['name'], impact, parseInt(loan['id']), tooltip]]);
     });
 
     chart.draw(data, options);
   }
 
   // Clothing, entertainment, manufacturing, retail, services
-  function calcImpact(loan_amount, gni_per_capita) {
-    gni_score = 0;
-    if (gni_per_capita < 1045) {
-      gni_score = 4;
-    } else if (gni_per_capita < 4125) {
-      gni_score = 3;
-    } else if (gni_per_capita < 12735) {
-      gni_score = 2;
+  function calculateImpact(loan) {
+    gniScore = 0;
+    gniPerCapita = 1400;
+    sector = loan['sector'];
+    
+
+    if (gniPerCapita < 1045) {
+        gniScore = 4;
+      } else if (gniPerCapita < 4125) {
+        gniScore = 3;
+      } else if (gniPerCapita < 12735) {
+        gniScore = 2;
+      } else {
+        gniScore = 1;
+      }
+
+    gniImpact = Math.min((loan['loan_amount']/gniPerCapita) * gniScore, 5);
+
+    if (sector == "Clothing" || sector == "Entertainment" || sector == "Manufacturing" || sector == "Retail" || sector == "Services" || sector == "Construction") {
+      return gniImpact
+    } else if (sector == "Education") {
+        literacyRate = 69;
+        literacyScore = 0;
+
+        if (literacyRate <= 60) {
+          literacyScore = 5;
+        } else if (literacyRate <= 80) {
+          literacyScore = 4;
+        } else if (literacyRate <= 90) {
+          literacyScore = 3;
+        } else if (literacyRate <= 97) {
+          literacyScore = 2;
+        } else {
+          literacyScore = 1;
+        }
+
+        return Math.min((loan['loan_amount']/gniPerCapita) * 2 * literacyScore, 5);
+
+    } else if (sector == "Food") {
+      depthOfHunger = 200;
+      depthOfHungerScore = 0;
+
+      if (depthOfHunger < 120) {
+        depthOfHungerScore = 1;
+      } else if (depthOfHungerScore < 180) {
+        depthOfHungerScore = 2;
+      } else if (depthOfHungerScore < 240) {
+        depthOfHungerScore = 3;
+      } else if (depthOfHungerScore < 300) {
+        depthOfHungerScore = 4;
+      } else {
+        depthOfHungerScore = 5;
+      }
+
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * depthOfHungerScore, 5))/2;
+
+    } else if (sector == "Health") {
+      lifeExpectancy = 60;
+      lifeExpectancyScore = 0; 
+      
+      if (lifeExpectancy < 55) {
+        lifeExpectancyScore = 5;
+      } else if (lifeExpectancy < 61) {
+        lifeExpectancyScore = 4;
+      } else if (depthOfHungerScore < 67) {
+        lifeExpectancyScore = 3;
+      } else if (depthOfHungerScore < 73) {
+        lifeExpectancyScore = 2;
+      } else {
+        lifeExpectancyScore = 1;
+      }
+
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * lifeExpectancyScore, 5))/2;
     } else {
-      gni_score = 1;
+      return 0;
     }
-
-    return Math.min((loan_amount/gni_per_capita) * gni_score, 5);
-  }
-
-  function scale(low, high) {
-
+    
   }
 
   function generateLenderGraphs(result) {
@@ -213,63 +320,63 @@ $(document).ready(function() {
       switch (sector) {
         case "Agriculture":
           sectorCount[1][1]++;
-          sectorImpact[1][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[1][1] += calculateImpact(loan);
           break;
         case "Arts":
           sectorCount[2][1]++;
-          sectorImpact[2][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[2][1] += calculateImpact(loan);
           break;
         case "Clothing":
           sectorCount[3][1]++;
-          sectorImpact[3][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[3][1] += calculateImpact(loan);
           break;
         case "Construction":
           sectorCount[4][1]++;
-          sectorImpact[4][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[4][1] += calculateImpact(loan);
           break;
         case "Education":
           sectorCount[5][1]++;
-          sectorImpact[5][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[5][1] += calculateImpact(loan);
           break;
         case "Entertainment":
           sectorCount[6][1]++;
-          sectorImpact[6][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[6][1] += calculateImpact(loan);
           break;
         case "Food":
           sectorCount[7][1]++;
-          sectorImpact[7][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[7][1] += calculateImpact(loan);
           break;
         case "Health":
           sectorCount[8][1]++;
-          sectorImpact[8][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[8][1] += calculateImpact(loan);
           break;
         case "Housing":
           sectorCount[9][1]++;
-          sectorImpact[9][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[9][1] += calculateImpact(loan);
           break;
         case "Manufacturing":
           sectorCount[10][1]++;
-          sectorImpact[10][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[10][1] += calculateImpact(loan);
           break;
         case "Personal Use":
           sectorCount[11][1]++;
-          sectorImpact[11][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[11][1] += calculateImpact(loan);
           break;
         case "Retail":
           sectorCount[12][1]++;
-          sectorImpact[12][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[12][1] += calculateImpact(loan);
           break;
         case "Services":
           sectorCount[13][1]++;
-          sectorImpact[13][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[13][1] += calculateImpact(loan);
           break;
         case "Transportation":
           sectorCount[14][1]++;
-          sectorImpact[14][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[14][1] += calculateImpact(loan);
           break;
         case "Wholesale":
           sectorCount[15][1]++;
-          sectorImpact[1][1] += calcImpact(loan['loan_amount'], 1400);
+          sectorImpact[1][1] += calculateImpact(loan);
           break;
         default:
           console.log("sector doesn't match any found");
