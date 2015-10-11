@@ -10,6 +10,10 @@ $(document).ready(function() {
          }
     });
 
+  $(".allocation").click(switchGraphs);
+  $(".impact").click(switchGraphs);
+  $(".status").click(switchGraphs);
+
   $(".forcegraph").hide();
   $(".info").hide();
   google.setOnLoadCallback(drawMap);
@@ -73,6 +77,7 @@ $(document).ready(function() {
     $(".right-col").append("<div class=\"user-info-line-bold\">Impact Rating: " + round(calculateImpact(loan)) + "</div>");
 
     $(".visualizations").empty();
+    $(".tabs").hide();
     
     if (loan['sector'] == "Education") {
       $(".visualizations").append("<div class=\"infotitle\"><h1>Key Economic Factor</h1></div>");
@@ -293,23 +298,46 @@ $(document).ready(function() {
     $(".right-col").append("<div class=\"user-info-line\">" + lender['whereabouts'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">Loans made: " + lender['loan_count'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + lender['occupational_info'] + "</div>");
+    $(".tabs").show();
     var id = document.getElementById('id').value;
     $.ajax({
         url:"http://api.kivaws.org/v1/lenders/" + id.toString() + "/loans.json",
         success: function(result) {
           $(".visualizations").empty();
-          $(".visualizations").append("<div class=\"infotitle\"><h1>Where You Are Lending</h1></div>");
-          $(".visualizations").append("<div class=\"infochart\" id=\"sectorpiechart\"></div>");
-          $(".visualizations").append("<div class=\"infotitle\"><h1>Where You Are Making a Difference</h1></div>");
-          $(".visualizations").append("<div class=\"infochart\" id=\"sectorimpactchart\"></div>");
-          $(".visualizations").append("<div class=\"infotitle\"><h1>How Your Loans Are Doing </h1></div>");
-          $(".visualizations").append("<div class=\"infochart\" id=\"loanstatuspiechart\"></div>");
+          $(".visualizations").append("<div class=\"allocation_tab\"><div class=\"infotitle\"><h1>Where You Are Lending</h1></div><div class=\"infochart\" id=\"sectorpiechart\"></div></div>");
+          $(".visualizations").append("<div class=\"impact_tab\"><div class=\"infotitle\"><h1>Where You Are Making a Difference</h1></div><div class=\"infochart\" id=\"sectorimpactchart\"></div></div>");
+          $(".visualizations").append("<div class=\"status_tab\"><div class=\"infotitle\"><h1>How Your Loans Are Doing </h1></div><div class=\"infochart\" id=\"loanstatuspiechart\"></div></div>");
           populateLoanMap(result);
           generateLenderGraphs(result);
+          $(".impact_tab").hide();
+          $(".status_tab").hide();
         },
         async: false
       });
 
+  }
+
+  function switchGraphs() {
+    console.log("in switch graphs");
+    console.log($(this).text().replace(/\s/g, ''));
+    if ($(this).text().replace(/\s/g, '') === 'Allocation') {
+      console.log("click allocation");
+      $(".impact_tab").hide();
+      $(".status_tab").hide();
+      $(".allocation_tab").show();
+    }
+    if ($(this).text().replace(/\s/g, '') === 'Impact') {
+      console.log("click impact");
+      $(".impact_tab").show();
+      $(".status_tab").hide();
+      $(".allocation_tab").hide();
+    }
+    if ($(this).text().replace(/\s/g, '') === 'Status') {
+      console.log("click status");
+      $(".impact_tab").hide();
+      $(".status_tab").show();
+      $(".allocation_tab").hide();
+    }
   }
 
   function populateLoanMap(result) {
@@ -391,7 +419,6 @@ $(document).ready(function() {
         loanCountry = data[loanCountry]
       }
     });
-
     if (loan['planned_expiration_date']) {
       var loanYear = loan['planned_expiration_date'].split("-")[0];
     }
