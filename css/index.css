@@ -126,6 +126,12 @@ input:focus, select:focus, textarea:focus, button:focus {
   color: #333333;
 }
 
+.forcegraph {
+  width: 100%;
+  background-color: #ccc;
+  clear: both;
+}
+
 .visualizations {
   width: 100%;
   clear: both;
