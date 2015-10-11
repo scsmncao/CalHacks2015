@@ -9,23 +9,28 @@ body {
 .nav_container {
   width: 100%;  
   height: 50px;
-  position: fixed;
   background-color: #ffffff;
   z-index: 99;
 }
 
 .logo {
   float: left;
+  width: 33.3%;
 }
 
 .findID {
   float: right;
+  width: 33.3%;
+  height: 30px;
+  padding: 10px 0;
 }
 
-.nav {  
+.nav {
+  float: left;
   font-size: 1em;
   height: 30px;
-  padding: 10px;
+  width: 33.3%;
+  padding: 10px 0;
 }
 
 .nav_container img {
@@ -34,17 +39,17 @@ body {
   margin: 5px;
 }
 
-.chart_container{
+.chart_container {
 	position: relative;
 	width: 100%;
 	height-min: 500px;
 	padding-bottom: 56.25%;
 }
+
 .chart_container > div {
 	position: absolute;
 	height: 100%;
 	width: 100%;
-
 }
 
 input:focus, select:focus, textarea:focus, button:focus {
@@ -62,24 +67,51 @@ input:focus, select:focus, textarea:focus, button:focus {
 
 .info {
   background-color: #fff;
-  width: 80%;
+  width: 84%;
   padding-top: 20px;
-  padding-left: 10%;
-  padding-right: 10%;
+  padding-left: 8%;
+  padding-right: 8%;
   padding-bottom: 20px;
 }
 
+.top-wrapper{
+  width: 900px;
+  height: 200px;
+  margin: 0 auto;
+}
+
 .left-col {
-/*   background-color: #f00; */
-  /* width: 18%; */
-  padding: 1%;
+  width: 160px;
+  padding: 0 20px;
   float: left;
 }
 
-.user-image img {
-  border-radius: 16px;
-  margin: 0 auto;
+.right-col {
+  width: 660px;
+  padding: 0 20px;
+  float: right;
 }
+
+.user-image {
+  width:160px;
+  height:160px;
+}
+
+.user-image img.wide {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    width: 100%;
+    border-radius: 80px;
+}
+
+.user-image img.tall {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: 100%;
+    border-radius: 80px;
+}​
 
 .name h1 {
   margin: 0;
@@ -94,20 +126,20 @@ input:focus, select:focus, textarea:focus, button:focus {
   color: #333333;
 }
 
-.right-col {
-/*   background-color: #0f0; */
-  width: 50%;
-  padding: 1%;
-  float: right;
-}
-
 .visualizations {
   width: 100%;
   clear: both;
+  padding-top: 30px;
+}
+
+.infotitle {
+  width: 100%;
+  color: #2b2b2b;
+  text-align:center;
 }
 
 .infochart {
   width: 900px;
-  height: 400px;
+  height: 350px;
   margin: 0 auto;
 }

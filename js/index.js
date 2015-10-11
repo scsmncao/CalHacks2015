@@ -1,13 +1,6 @@
 google.load('visualization', '1', {'packages': ['geochart', 'corechart']});
 $(document).ready(function() {
 
-  $('.search_bar').keyup(function(event) {
-        if (event.keyCode == 13) {
-            showLender();
-            return false;
-         }
-    });
-
   google.setOnLoadCallback(drawMap);
   var chart;
   var data;
@@ -62,6 +55,7 @@ $(document).ready(function() {
     var loan = result['loans'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
+    displayImage();
     $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + round(calculateImpact(loan)) + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
@@ -73,6 +67,9 @@ $(document).ready(function() {
     if (loan['sector'] == "Education") {
       $(".visualizations").append("<div class=\"infochart\" id=\"litratelinegraph\"></div>");
       generateUserLiteracyRateLineGraph(result);
+    } else if (loan['sector'] == "Agriculture") {
+      $(".visualizations").append("<div class=\"infochart\" id=\"cereallinegraph\"></div>");
+      generateUserCerealPerCapitaLineGraph(result);
     }
 
     $(".visualizations").append("<div class=\"infochart\" id=\"gnilinegraph\"></div>");
@@ -157,6 +154,27 @@ $(document).ready(function() {
     chart.draw(data, options);
   }
 
+  function generateUserCerealPerCapitaLineGraph(result) {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Year');                                
+    data.addColumn('number', 'Country');
+    data.addColumn('number', 'World');
+
+    for (i = 2000; i < 2015; i++) {
+      data.addRows([[i.toString(), (Math.random()+1) + 0.2, (Math.random() * 0.8) + 0.6]]);
+    }
+
+    var options = {
+          title: 'Cereal Production per Capita vs. World Average',
+          vAxis: { title: "Metric Tonnes per Capita" },
+          curveType: 'function',
+          legend: { position: 'right' }
+        };
+
+    var chart = new google.visualization.LineChart(document.getElementById('cereallinegraph'));
+    chart.draw(data, options);
+  }
+
   function showLender() {
     var id = document.getElementById('id').value;
     $.ajax({
@@ -169,12 +187,16 @@ $(document).ready(function() {
         },
         async: false
       });
+    $('html:not(:animated), body:not(:animated)').animate({
+          scrollTop: $("#map").offset().top
+      }, 750);
   }
 
   function appendLenderInfo(result) {
     var lender = result['lenders'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + lender['image']['id'] + ".jpg\"></img></div>");
+    displayImage();
     $(".right-col").append("<div class=\"name\"><h1>" + lender['name'] + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + lender['whereabouts'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">Loans made: " + lender['loan_count'] + "</div>");
@@ -184,8 +206,11 @@ $(document).ready(function() {
         url:"http://api.kivaws.org/v1/lenders/" + id.toString() + "/loans.json",
         success: function(result) {
           $(".visualizations").empty();
+          $(".visualizations").append("<div class=\"infotitle\"><h1>Where You Are Lending</h1></div>");
           $(".visualizations").append("<div class=\"infochart\" id=\"sectorpiechart\"></div>");
+          $(".visualizations").append("<div class=\"infotitle\"><h1>Where You Are Making a Difference</h1></div>");
           $(".visualizations").append("<div class=\"infochart\" id=\"sectorimpactchart\"></div>");
+          $(".visualizations").append("<div class=\"infotitle\"><h1>How Your Loans Are Doing </h1></div>");
           $(".visualizations").append("<div class=\"infochart\" id=\"loanstatuspiechart\"></div>");
           populateLoanMap(result);
           generateLenderGraphs(result);
@@ -212,15 +237,13 @@ $(document).ready(function() {
         latitude = parseFloat(geoCoord[0]);
         longitude = parseFloat(geoCoord[1]);
         impact = calculateImpact(loan);
-
-        tooltip = loan['location']['town'] + ", " + loan['location']['country'] + "\n" + loan['use']; 
+        tooltip = "Impact Score: " + round(impact) + "\n" + loan['location']['country'] + "\n" + loan['location']['town'] + ", " + loan['location']['country'] + "\n" + loan['use']; 
         data.addRows([[latitude, longitude, loan['name'], impact, parseInt(loan['id']), tooltip]]);
     });
 
     chart.draw(data, options);
   }
 
-  // Clothing, entertainment, manufacturing, retail, services
   function calculateImpact(loan) {
     gniPerCapita = 1400;
     gniScore = getScoreByBracket(gniPerCapita, [0, 1045, 4125, 12735], false);
@@ -228,8 +251,11 @@ $(document).ready(function() {
 
     sector = loan['sector'];
 
-    if (sector == "Clothing" || sector == "Entertainment" || sector == "Manufacturing" || sector == "Retail" || sector == "Services" || sector == "Construction") {
-      return gniImpact
+    if (sector == "Clothing" || sector == "Entertainment" 
+      || sector == "Manufacturing" || sector == "Retail" 
+      || sector == "Services" || sector == "Construction" 
+      || sector == "Arts") {
+      return gniImpact;
     } else if (sector == "Education") {
         literacyRate = 69;
         literacyScore = getScoreByBracket(literacyRate, [60, 80, 90, 97], false);
@@ -253,7 +279,14 @@ $(document).ready(function() {
     } else if (sector == "Personal Use") {
       percentSanitation = 0;
       sanitationScore = getScoreByBracket(percentSanitation, [25, 43, 61, 79], false);
-      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * percentSanitation, 5))/2;
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * sanitationScore, 5))/2;
+
+    } else if (sector == "Agriculture") {
+      cerealProduction = 3400;
+      population = 1000000;
+      prodPerPop = cerealProduction/population;
+      cerealScore = getScoreByBracket(prodPerPop, [0.4, 0.7, 1, 1.3], false);
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * cerealScore, 5))/2;
 
     } else {
       return 0;
@@ -427,25 +460,20 @@ $(document).ready(function() {
     }
 
     var sectorPieData = google.visualization.arrayToDataTable(sectorCount);
-    var sectorPieOptions = {
-      title: 'Loan Allocation'
-    };
+    var sectorPieOptions = {};
     var sectorPieChart = new google.visualization.PieChart(document.getElementById('sectorpiechart'));
     sectorPieChart.draw(sectorPieData, sectorPieOptions);
 
     var sectorImpactData = google.visualization.arrayToDataTable(sectorImpact);
     var sectorImpactOptions = {
-      title: 'Average Impact by Sector',
-      //vAxis
-      legend: { position: "none" }
+      hAxis: { title: "Impact Rating", ticks: [1,2,3,4,5] },
+      legend: {position: "none"}
     };
     var sectorImpactPieChart = new google.visualization.BarChart(document.getElementById("sectorimpactchart"));
     sectorImpactPieChart.draw(sectorImpactData, sectorImpactOptions);
 
     var loanStatusData = google.visualization.arrayToDataTable(loanStatusCount);
-    var loanStatusOptions = {
-      title: 'Loan Status Breakdown'
-    };
+    var loanStatusOptions = {};
     var loanStatusChart = new google.visualization.PieChart(document.getElementById('loanstatuspiechart'));
     loanStatusChart.draw(loanStatusData, loanStatusOptions);
   }
@@ -456,6 +484,20 @@ $(document).ready(function() {
 
   function round(num) {
     return Math.round(num * 100) / 100
+  }
+
+  $('#id').keyup(function(event) {
+    if (event.keyCode == 13) {
+      showLender();
+      return false;
+    } return true;
+  });
+
+  function displayImage(){
+    $('.user-image').find('img').each(function(){
+      var imgClass = (this.width/this.height > 1) ? 'wide' : 'tall';
+      $(this).addClass(imgClass);
+    })
   }
 
 });

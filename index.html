@@ -1,5 +1,6 @@
 <html>
   <head>
+    <title>Kiva Impact</title>
     <script src="js/jquery-2.1.4.min.js"></script> 
     <script src="js/underscore-min.js"></script>
     <script src="https://www.google.com/jsapi"></script>
@@ -12,23 +13,25 @@
       <div class = "logo">
         <img src = "img/logo.jpg">
       </div>
-      <div class = "findID">
-        <a href="http://www.kiva.org/myLenderId" target="_blank">Don't know your lender ID?</a>
-      </div>
       <div class = "nav">
         <form action="#">
           <input class ="search_bar" type="text" id="id" name="kivaID" placeholder="Enter your Kiva lender ID">
           <input id="go" type="button" value="Go" onclick="showLender()" />
         </form>
-
+      </div>
+      <div class = "findID">
+        <a href="http://www.kiva.org/myLenderId" target="_blank">Don't know your lender ID?</a>
       </div>
     </div> 
-	<div class="chart_container">
+      
+	<div id = "map" class="chart_container">
 		<div class="chart_div"></div>
 	</div>
     <div class="info" id="info">
-      <div class="left-col"></div>
-      <div class="right-col"></div>
+      <div class="top-wrapper">
+        <div class="left-col"></div>
+        <div class="right-col"></div>
+      </div>
       <div class="visualizations"></div>
     </div>
   </body>
