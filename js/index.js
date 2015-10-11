@@ -1,13 +1,6 @@
 google.load('visualization', '1', {'packages': ['geochart', 'corechart']});
 $(document).ready(function() {
 
-  $('.search_bar').keyup(function(event) {
-        if (event.keyCode == 13) {
-            showLender();
-            return false;
-         }
-    });
-
   google.setOnLoadCallback(drawMap);
   var chart;
   var data;
@@ -62,6 +55,7 @@ $(document).ready(function() {
     var loan = result['loans'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
+    displayImage();
     $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + round(calculateImpact(loan)) + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
@@ -166,6 +160,7 @@ $(document).ready(function() {
     var lender = result['lenders'][0];
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + lender['image']['id'] + ".jpg\"></img></div>");
+    displayImage();
     $(".right-col").append("<div class=\"name\"><h1>" + lender['name'] + "</h1></div>");
     $(".right-col").append("<div class=\"town-country\">" + lender['whereabouts'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">Loans made: " + lender['loan_count'] + "</div>");
@@ -175,8 +170,11 @@ $(document).ready(function() {
         url:"http://api.kivaws.org/v1/lenders/" + id.toString() + "/loans.json",
         success: function(result) {
           $(".visualizations").empty();
+          $(".visualizations").append("<div class=\"infotitle\"><h1>Where You Are Lending</h1></div>");
           $(".visualizations").append("<div class=\"infochart\" id=\"sectorpiechart\"></div>");
+          $(".visualizations").append("<div class=\"infotitle\"><h1>Where You Are Making a Difference</h1></div>");
           $(".visualizations").append("<div class=\"infochart\" id=\"sectorimpactchart\"></div>");
+          $(".visualizations").append("<div class=\"infotitle\"><h1>How Your Loans Are Doing </h1></div>");
           $(".visualizations").append("<div class=\"infochart\" id=\"loanstatuspiechart\"></div>");
           populateLoanMap(result);
           generateLenderGraphs(result);
@@ -203,15 +201,13 @@ $(document).ready(function() {
         latitude = parseFloat(geoCoord[0]);
         longitude = parseFloat(geoCoord[1]);
         impact = calculateImpact(loan);
-
-        tooltip = loan['location']['town'] + ", " + loan['location']['country'] + "\n" + loan['use']; 
+        tooltip = "Impact Score: " + round(impact) + "\n" + loan['location']['country'] + "\n" + loan['location']['town'] + ", " + loan['location']['country'] + "\n" + loan['use']; 
         data.addRows([[latitude, longitude, loan['name'], impact, parseInt(loan['id']), tooltip]]);
     });
 
     chart.draw(data, options);
   }
 
-  // Clothing, entertainment, manufacturing, retail, services
   function calculateImpact(loan) {
     gniPerCapita = 1400;
     gniScore = getScoreByBracket(gniPerCapita, [0, 1045, 4125, 12735], false);
@@ -428,16 +424,12 @@ $(document).ready(function() {
     }
 
     var sectorPieData = google.visualization.arrayToDataTable(sectorCount);
-    var sectorPieOptions = {
-      title: 'Loan Allocation'
-    };
+    var sectorPieOptions = {};
     var sectorPieChart = new google.visualization.PieChart(document.getElementById('sectorpiechart'));
     sectorPieChart.draw(sectorPieData, sectorPieOptions);
 
     var sectorImpactData = google.visualization.arrayToDataTable(sectorImpact);
     var sectorImpactOptions = {
-      title: 'Average Impact by Sector',
-      vAxis: { title: "Sector" },
       hAxis: { title: "Impact Rating", ticks: [1,2,3,4,5] },
       legend: {position: "none"}
     };
@@ -445,9 +437,7 @@ $(document).ready(function() {
     sectorImpactPieChart.draw(sectorImpactData, sectorImpactOptions);
 
     var loanStatusData = google.visualization.arrayToDataTable(loanStatusCount);
-    var loanStatusOptions = {
-      title: 'Loan Status Breakdown'
-    };
+    var loanStatusOptions = {};
     var loanStatusChart = new google.visualization.PieChart(document.getElementById('loanstatuspiechart'));
     loanStatusChart.draw(loanStatusData, loanStatusOptions);
   }
@@ -458,6 +448,20 @@ $(document).ready(function() {
 
   function round(num) {
     return Math.round(num * 100) / 100
+  }
+
+  $('#id').keyup(function(event) {
+    if (event.keyCode == 13) {
+      showLender();
+      return false;
+    } return true;
+  });
+
+  function displayImage(){
+    $('.user-image').find('img').each(function(){
+      var imgClass = (this.width/this.height > 1) ? 'wide' : 'tall';
+      $(this).addClass(imgClass);
+    })
   }
 
 });
