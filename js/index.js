@@ -353,8 +353,6 @@ $(document).ready(function() {
     var countryData = [];
     var worldData = [];
 
-    console.log(dataObj);
-
     if (country in dataObj['codes']) {
       // country data
       $.ajax({
@@ -393,17 +391,43 @@ $(document).ready(function() {
         loanCountry = data[loanCountry]
       }
     });
-    console.log(loan);
+
     if (loan['planned_expiration_date']) {
       var loanYear = loan['planned_expiration_date'].split("-")[0];
     }
     else {
       var loanYear = loan['posted_date'].split("-")[0];
     }
-    var gniPerCapita = getClosestDataPoint(loanYear, loanCountry, "data/capita_codes.json")
+        
+    var capitaCodes = {};
+
+    $.ajax({
+      url: "data/capita_codes.json",
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        capitaCodes = data
+      }
+    });
+
+    var countryData = [];
+    // country data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/" + capitaCodes['codes'][loanCountry] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+        success: function(result) {
+          countryData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+    
+    // var gniPerCapita = getClosestDataPoint(loanYear, loanCountry, "data/capita_codes.json")
+    var gniPerCapita = countryData[Math.min(parseInt(loanYear) - 2000, 13)][1];
     var gniScore = getScoreByBracket(gniPerCapita, [0, 1045, 4125, 12735], false);
     var gniImpact = Math.min((loan['loan_amount']/gniPerCapita) * gniScore, 5);
 
+    console.log(loanCountry);
+    console.log("GNI per capita " + gniPerCapita);
+    console.log("GNI Score " + gniImpact);
     sector = loan['sector'];
 
     if (sector == "Clothing" || sector == "Entertainment" 
@@ -412,14 +436,18 @@ $(document).ready(function() {
       || sector == "Arts") {
       return gniImpact;
     } else if (sector == "Education") {
+        console.log("in education")
         var literacyRate = getClosestDataPoint(loanYear, loanCountry, "data/literacy_codes.json");
+        console.log("literacyRate " + literacyRate);
         var literacyScore = getScoreByBracket(literacyRate, [60, 80, 90, 97], false);
         return Math.min((loan['loan_amount']/gniPerCapita) * 2 * literacyScore, 5);
 
     } else if (sector == "Food") {
       var depthOfHunger = 500;
       var depthOfHungerScore = getScoreByBracket(depthOfHunger, [120, 180, 240, 300], true);
-      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * depthOfHungerScore, 5))/2;
+      console.log("depthOfHunger " + depthOfHunger);
+      console.log("depthOfHungerScore " + depthOfHungerScore);
+      return (gniImpact + depthOfHungerScore)/2;
 
     } else if (sector == "Health") {
       var lifeExpectancy = getClosestDataPoint(loanYear, loanCountry, "data/life_expect_code.json");
