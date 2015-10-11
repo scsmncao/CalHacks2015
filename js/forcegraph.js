@@ -10,17 +10,15 @@ $(document).ready(function() {
   var outline = false;
 
   var min_score = 0;
-  var max_score = 1;
+  var max_score = 2;
 
-  var color = d3.scale.linear()
-    .domain([min_score, (min_score+max_score)/2, max_score])
-    .range(["lime", "yellow", "red"]);
+  var color = d3.scale.linear().domain([min_score, (min_score+max_score)/2, max_score]).range(["lime", "yellow", "red"]);
 
   var highlight_color = "#cccccc";
   var highlight_trans = 0.1;
     
   var size = d3.scale.pow().exponent(1).domain([1,100]).range([8,24]);
-  var force = d3.layout.force().linkDistance(120).charge(-300).size([w,h]);
+  var force = d3.layout.force().linkDistance(60).charge(-300).size([w,h]);
 
   var default_node_color = "#ccc";
   var default_link_color = "#888";
@@ -32,11 +30,12 @@ $(document).ready(function() {
   var max_base_node_size = 36;
   var min_zoom = 3;
   var max_zoom = 3;
+  $(".forcegraph").append("<div class=\"infotitle\"><h1>Impact of this Loan</h1></div>");
   var svg = d3.select(".forcegraph").append("svg");
   var zoom = d3.behavior.zoom().scaleExtent([min_zoom,max_zoom])
   var g = svg.append("g");
   svg.style("cursor","move");
-
+  
   var graph = {};
 
   $.ajax({
@@ -65,7 +64,11 @@ $(document).ready(function() {
   return false;
   }
 
-  force.nodes(graph.nodes).links(graph.links).start();
+  force.nodes(graph.nodes).charge(function(d){
+        var charge = -500;
+        if (d.index === 0) charge = 10 * charge;
+        return charge;
+    }).links(graph.links).start();
 
   var link = g.selectAll(".link")
     .data(graph.links)
@@ -77,20 +80,13 @@ $(document).ready(function() {
   else return default_link_color; })
 
 
-  var node = g.selectAll(".node").data(graph.nodes).enter().append("g").attr("class", "node").call(force.drag)
-
-  // node.on("dblclick.zoom", function(d) { d3.event.stopPropagation();
-  //   var dcx = (window.innerWidth/2-d.x*zoom.scale());
-  //   var dcy = (window.innerHeight/2-d.y*zoom.scale());
-  //   zoom.translate([dcx,dcy]);
-  //   g.attr("transform", "translate("+ dcx + "," + dcy  + ")scale(" + zoom.scale() + ")");
-  // });
+  var node = g.selectAll(".node").data(graph.nodes).enter().append("g").attr("class", "node").call(force.drag);
 
   var tocolor = "fill";
   var towhite = "stroke";
   if (outline) {
-    tocolor = "stroke"
-    towhite = "fill"
+    tocolor = "stroke";
+    towhite = "fill";
   }
     
   var circle = node.append("path")
@@ -184,29 +180,6 @@ $(document).ready(function() {
       });
     }
   }
-
-  // zoom.on("zoom", function() {
-  //   var stroke = nominal_stroke;
-  //   if (nominal_stroke*zoom.scale()>max_stroke) stroke = max_stroke/zoom.scale();
-  //   link.style("stroke-width",stroke);
-  //   circle.style("stroke-width",stroke);
-     
-  //   var base_radius = nominal_base_node_size;
-  //   if (nominal_base_node_size*zoom.scale()>max_base_node_size) base_radius = max_base_node_size/zoom.scale();
-  //   circle.attr("d", d3.svg.symbol()
-  //   .size(function(d) { return Math.PI*Math.pow(size(d.size)*base_radius/nominal_base_node_size||base_radius,2); })
-  //   .type(function(d) { return d.type; }))
-      
-  //   if (!text_center) text.attr("dx", function(d) { return (size(d.size)*base_radius/nominal_base_node_size||base_radius); });
-    
-  //   var text_size = nominal_text_size;
-  //   if (nominal_text_size*zoom.scale()>max_text_size) text_size = max_text_size/zoom.scale();
-  //   text.style("font-size",text_size + "px");
-
-  //   g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  // });
-   
-  // svg.call(zoom);   
 
   resize();
   d3.select(window).on("resize", resize).on("keydown", keydown);

@@ -118,24 +118,25 @@ input:focus, select:focus, textarea:focus, button:focus {
   color: #2b2b2b;
 }
 
-.town-country {
+.user-info-line {
   color: #6A6A6A;
 }
 
-.user-info-line {
+.user-info-line-bold {
   color: #333333;
+  font-size: 1.2em;
 }
 
 .forcegraph {
   width: 100%;
-  background-color: #ccc;
   clear: both;
+  display: none;
 }
 
 .visualizations {
   width: 100%;
   clear: both;
-  padding-top: 30px;
+  padding-top: 16px;
 }
 
 .infotitle {

@@ -1,6 +1,7 @@
 google.load('visualization', '1', {'packages': ['geochart', 'corechart']});
 $(document).ready(function() {
-
+  $(".forcegraph").hide();
+  $(".info").hide();
   google.setOnLoadCallback(drawMap);
   var chart;
   var data;
@@ -56,22 +57,25 @@ $(document).ready(function() {
 
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + loan['image']['id'] + ".jpg\"></img></div>");
     displayImage();
-    $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + round(calculateImpact(loan)) + "</h1></div>");
-    $(".right-col").append("<div class=\"town-country\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
-    $(".right-col").append("<div class=\"user-info-line\">" + loan['sector'] + "</div>");
+    $(".right-col").append("<div class=\"name\"><h1>" + loan['name'] + " | " + loan['sector'] + "</h1></div>");
+    $(".right-col").append("<div class=\"user-info-line\">" + loan['location']['town'] + ", " + loan['location']['country'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">$" + loan['funded_amount'] + "/$" + loan['loan_amount'] + " funded</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + loan['use'] + "</div>");
+    $(".right-col").append("<div class=\"user-info-line-bold\">Impact Rating: " + round(calculateImpact(loan)) + "</div>");
 
+    $(".forcegraph").show();
     $(".visualizations").empty();
     
     if (loan['sector'] == "Education") {
+      $(".visualizations").append("<div class=\"infotitle\"><h1>Key Economic Factor</h1></div>");
       $(".visualizations").append("<div class=\"infochart\" id=\"litratelinegraph\"></div>");
       generateUserLiteracyRateLineGraph(result);
     } else if (loan['sector'] == "Agriculture") {
+      $(".visualizations").append("<div class=\"infotitle\"><h1>Key Economic Factor</h1></div>");
       $(".visualizations").append("<div class=\"infochart\" id=\"cereallinegraph\"></div>");
       generateUserCerealPerCapitaLineGraph(result);
     }
-
+    $(".visualizations").append("<div class=\"infotitle\"><h1>Key Economic Factor</h1></div>");
     $(".visualizations").append("<div class=\"infochart\" id=\"gnilinegraph\"></div>");
     generateUserGNILineGraph(result);
   }
@@ -177,16 +181,19 @@ $(document).ready(function() {
 
   function showLender() {
     var id = document.getElementById('id').value;
+
     $.ajax({
         url:"http://api.kivaws.org/v1/lenders/" + id.toString() + ".json",
         success: function(result) {
           var lender = result['lenders'][0];
           $(".left-col").empty();
           $(".right-col").empty();
+          $(".forcegraph").hide();
           appendLenderInfo(result);
         },
         async: false
       });
+    $(".info").show();
     $('html:not(:animated), body:not(:animated)').animate({
           scrollTop: $("#map").offset().top
       }, 750);
@@ -198,7 +205,7 @@ $(document).ready(function() {
     $(".left-col").append("<div class=\"user-image\"><img src=\"http://www.kiva.org/img/w200h200/" + lender['image']['id'] + ".jpg\"></img></div>");
     displayImage();
     $(".right-col").append("<div class=\"name\"><h1>" + lender['name'] + "</h1></div>");
-    $(".right-col").append("<div class=\"town-country\">" + lender['whereabouts'] + "</div>");
+    $(".right-col").append("<div class=\"user-info-line\">" + lender['whereabouts'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">Loans made: " + lender['loan_count'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line\">" + lender['occupational_info'] + "</div>");
     var id = document.getElementById('id').value;
