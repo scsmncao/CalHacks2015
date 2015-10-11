@@ -40,9 +40,11 @@ $(document).ready(function() {
     dataType: 'json',
     async: false,
     success: function(data) {
-      graph = data
+      console.log("successful load");
+      graph = data;
     }
   });
+
   console.log(graph);
 
   var linkedByIndex = {};
