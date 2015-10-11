@@ -85,8 +85,44 @@ $(document).ready(function() {
     data.addColumn('number', 'Country');
     data.addColumn('number', 'World');
 
-    for (i = 2000; i < 2015; i++) {
-      data.addRows([[i.toString(), Math.floor((Math.random() * 1600) + 400), Math.floor((Math.random() * 1000) + 3000)]]);
+    var loanCountry = result['loans'][0]['location']['country'];
+
+    if (loanCountry == "United States") loanCountry = "America";
+
+    var capitaCodes = {};
+
+    $.ajax({
+      url: "data/capita_codes.json",
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        capitaCodes = data
+      }
+    });
+
+    var countryData = [];
+    var worldData = []
+
+    // country data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/" + capitaCodes['codes'][loanCountry] + "/data.json?start_date=2000-01-01&order=asc",
+        success: function(result) {
+          countryData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+
+    // world data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/UN/NA_1_33/data.json?start_date=2000-01-01&order=asc",
+        success: function(result) {
+          worldData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+
+    for (i = 0; i < 14; i++) {
+      data.addRows([[(i + 2000).toString(), countryData[i][1], worldData[i][1]]]);
     }
 
     var options = {
