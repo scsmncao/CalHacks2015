@@ -9,10 +9,7 @@ $(document).ready(function() {
   var text_center = false;
   var outline = false;
 
-  var min_score = 0;
-  var max_score = 2;
-
-  var color = d3.scale.linear().domain([min_score, (min_score+max_score)/2, max_score]).range(["lime", "yellow", "red"]);
+  var color = d3.scale.linear().domain([0, 1, 2, 3]).range(["lime", "yellow", "red", "black"]);
 
   var highlight_color = "#cccccc";
   var highlight_trans = 0.1;
@@ -46,6 +43,7 @@ $(document).ready(function() {
       graph = data
     }
   });
+  console.log(graph);
 
   var linkedByIndex = {};
   graph.links.forEach(function(d) {
