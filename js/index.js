@@ -73,6 +73,9 @@ $(document).ready(function() {
     if (loan['sector'] == "Education") {
       $(".visualizations").append("<div class=\"infochart\" id=\"litratelinegraph\"></div>");
       generateUserLiteracyRateLineGraph(result);
+    } else if (loan['sector'] == "Agriculture") {
+      $(".visualizations").append("<div class=\"infochart\" id=\"cereallinegraph\"></div>");
+      generateUserCerealPerCapitaLineGraph(result);
     }
 
     $(".visualizations").append("<div class=\"infochart\" id=\"gnilinegraph\"></div>");
@@ -121,6 +124,27 @@ $(document).ready(function() {
     chart.draw(data, options);
   }
 
+  function generateUserCerealPerCapitaLineGraph(result) {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Year');                                
+    data.addColumn('number', 'Country');
+    data.addColumn('number', 'World');
+
+    for (i = 2000; i < 2015; i++) {
+      data.addRows([[i.toString(), (Math.random()+1) + 0.2, (Math.random() * 0.8) + 0.6]]);
+    }
+
+    var options = {
+          title: 'Cereal Production per Capita vs. World Average',
+          vAxis: { title: "Metric Tonnes per Capita" },
+          curveType: 'function',
+          legend: { position: 'right' }
+        };
+
+    var chart = new google.visualization.LineChart(document.getElementById('cereallinegraph'));
+    chart.draw(data, options);
+  }
+
   function showLender() {
     var id = document.getElementById('id').value;
     $.ajax({
@@ -133,6 +157,9 @@ $(document).ready(function() {
         },
         async: false
       });
+    $('html:not(:animated), body:not(:animated)').animate({
+          scrollTop: $("#map").offset().top
+      }, 750);
   }
 
   function appendLenderInfo(result) {
@@ -192,8 +219,11 @@ $(document).ready(function() {
 
     sector = loan['sector'];
 
-    if (sector == "Clothing" || sector == "Entertainment" || sector == "Manufacturing" || sector == "Retail" || sector == "Services" || sector == "Construction") {
-      return gniImpact
+    if (sector == "Clothing" || sector == "Entertainment" 
+      || sector == "Manufacturing" || sector == "Retail" 
+      || sector == "Services" || sector == "Construction" 
+      || sector == "Arts") {
+      return gniImpact;
     } else if (sector == "Education") {
         literacyRate = 69;
         literacyScore = getScoreByBracket(literacyRate, [60, 80, 90, 97], false);
@@ -217,7 +247,14 @@ $(document).ready(function() {
     } else if (sector == "Personal Use") {
       percentSanitation = 0;
       sanitationScore = getScoreByBracket(percentSanitation, [25, 43, 61, 79], false);
-      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * percentSanitation, 5))/2;
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * sanitationScore, 5))/2;
+
+    } else if (sector == "Agriculture") {
+      cerealProduction = 3400;
+      population = 1000000;
+      prodPerPop = cerealProduction/population;
+      cerealScore = getScoreByBracket(prodPerPop, [0.4, 0.7, 1, 1.3], false);
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * cerealScore, 5))/2;
 
     } else {
       return 0;
@@ -400,8 +437,9 @@ $(document).ready(function() {
     var sectorImpactData = google.visualization.arrayToDataTable(sectorImpact);
     var sectorImpactOptions = {
       title: 'Average Impact by Sector',
-      //vAxis
-      legend: { position: "none" }
+      vAxis: { title: "Sector" },
+      hAxis: { title: "Impact Rating", ticks: [1,2,3,4,5] },
+      legend: {position: "none"}
     };
     var sectorImpactPieChart = new google.visualization.BarChart(document.getElementById("sectorimpactchart"));
     sectorImpactPieChart.draw(sectorImpactData, sectorImpactOptions);

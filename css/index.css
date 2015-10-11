@@ -9,7 +9,6 @@ body {
 .nav_container {
   width: 100%;  
   height: 50px;
-  position: fixed;
   background-color: #ffffff;
   z-index: 99;
 }
@@ -34,17 +33,17 @@ body {
   margin: 5px;
 }
 
-.chart_container{
+.chart_container {
 	position: relative;
 	width: 100%;
 	height-min: 500px;
 	padding-bottom: 56.25%;
 }
+
 .chart_container > div {
 	position: absolute;
 	height: 100%;
 	width: 100%;
-
 }
 
 input:focus, select:focus, textarea:focus, button:focus {
@@ -95,7 +94,6 @@ input:focus, select:focus, textarea:focus, button:focus {
 }
 
 .right-col {
-/*   background-color: #0f0; */
   width: 50%;
   padding: 1%;
   float: right;
