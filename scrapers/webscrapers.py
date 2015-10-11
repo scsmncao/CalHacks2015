@@ -49,9 +49,9 @@ def getCodes(urlIn, line1, filename, pages):
 		splinterList = capita_codes.value.split("\n")
 		for line in splinterList:
 			if line1 in line and line[len(line)-1] != ".":
-				for i in range(len(line) - 1, -1, -1):
-					if line[i] == "-":
-						country = line[i + 1:].lstrip()
+				for i in range(0, len(line)):
+					if line[i] == "f":
+						country = line[i + 4:].lstrip()
 						break
 			if re.match(r'^CODE:', line):
 				databaseCode = line.split()[1]
@@ -63,4 +63,5 @@ def getCodes(urlIn, line1, filename, pages):
 	f.close()
 
 #getCodes('https://www.quandl.com/data/WWDI?keyword=Sanitation', 'Improved sanitation facilities', 'sanitation_codes.json', 8)
-getCodes('https://www.quandl.com/data/WWDI?keyword=cereal%20Production', 'Cereal production', 'cereal_codes.json', 9)
+# getCodes('https://www.quandl.com/data/WWDI?keyword=cereal%20Production', 'Cereal production', 'cereal_codes.json', 9)
+getCodes('https://www.quandl.com/data/FRED?keyword=total%20population', 'Total Population', 'population_codes.json', 10)
