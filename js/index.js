@@ -186,82 +186,62 @@ $(document).ready(function() {
 
   // Clothing, entertainment, manufacturing, retail, services
   function calculateImpact(loan) {
-    gniScore = 0;
     gniPerCapita = 1400;
-    sector = loan['sector'];
-    
-
-    if (gniPerCapita < 1045) {
-        gniScore = 4;
-      } else if (gniPerCapita < 4125) {
-        gniScore = 3;
-      } else if (gniPerCapita < 12735) {
-        gniScore = 2;
-      } else {
-        gniScore = 1;
-      }
-
+    gniScore = getScoreByBracket(gniPerCapita, [0, 1045, 4125, 12735], false);
     gniImpact = Math.min((loan['loan_amount']/gniPerCapita) * gniScore, 5);
+
+    sector = loan['sector'];
 
     if (sector == "Clothing" || sector == "Entertainment" || sector == "Manufacturing" || sector == "Retail" || sector == "Services" || sector == "Construction") {
       return gniImpact
     } else if (sector == "Education") {
         literacyRate = 69;
-        literacyScore = 0;
-
-        if (literacyRate <= 60) {
-          literacyScore = 5;
-        } else if (literacyRate <= 80) {
-          literacyScore = 4;
-        } else if (literacyRate <= 90) {
-          literacyScore = 3;
-        } else if (literacyRate <= 97) {
-          literacyScore = 2;
-        } else {
-          literacyScore = 1;
-        }
-
+        literacyScore = getScoreByBracket(literacyRate, [60, 80, 90, 97], false);
         return Math.min((loan['loan_amount']/gniPerCapita) * 2 * literacyScore, 5);
 
     } else if (sector == "Food") {
       depthOfHunger = 200;
-      depthOfHungerScore = 0;
-
-      if (depthOfHunger < 120) {
-        depthOfHungerScore = 1;
-      } else if (depthOfHungerScore < 180) {
-        depthOfHungerScore = 2;
-      } else if (depthOfHungerScore < 240) {
-        depthOfHungerScore = 3;
-      } else if (depthOfHungerScore < 300) {
-        depthOfHungerScore = 4;
-      } else {
-        depthOfHungerScore = 5;
-      }
-
+      depthOfHungerScore = getScoreByBracket(depthOfHunger, [120, 180, 240, 300], true);
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * depthOfHungerScore, 5))/2;
 
     } else if (sector == "Health") {
       lifeExpectancy = 60;
-      lifeExpectancyScore = 0; 
-      
-      if (lifeExpectancy < 55) {
-        lifeExpectancyScore = 5;
-      } else if (lifeExpectancy < 61) {
-        lifeExpectancyScore = 4;
-      } else if (depthOfHungerScore < 67) {
-        lifeExpectancyScore = 3;
-      } else if (depthOfHungerScore < 73) {
-        lifeExpectancyScore = 2;
-      } else {
-        lifeExpectancyScore = 1;
-      }
-
+      lifeExpectancyScore = getScoreByBracket(percentSanitation, [55, 61, 67, 73], false); 
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * lifeExpectancyScore, 5))/2;
+
+    } else if (sector == "Transportation") {
+      carsPerThousand = 100;
+      transportationScore = getScoreByBracket(carsPerThousand, [68, 174, 352, 523], false); 
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * transportationScore, 5))/2;
+
+    } else if (sector == "Personal Use") {
+      percentSanitation = 0;
+      sanitationScore = getScoreByBracket(percentSanitation, [25, 43, 61, 79], false);
+      return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * percentSanitation, 5))/2;
+
     } else {
       return 0;
     }
     
+  }
+
+  // supportValues has 4 values
+  // assign a score of 5 if value < supportValues[0]
+  // assign a score of 4 if supportValues[0] <= value < supportValues[1]
+  // and so on
+  // if inverse is true, start the score system from 1
+  function getScoreByBracket(value, supportValues, inverse) {      
+    if (value < supportValues[0]) {
+      return inverse ? 1 : 5;
+    } else if (value < supportValues[1]) {
+      return inverse ? 2 : 4;
+    } else if (value < supportValues[2]) {
+      return inverse ? 3 : 3;
+    } else if (value < supportValues[3]) {
+      return inverse ? 4 : 2;
+    } else {
+      return inverse ? 5 : 1;
+    }
   }
 
   function generateLenderGraphs(result) {
@@ -420,6 +400,7 @@ $(document).ready(function() {
     var sectorImpactData = google.visualization.arrayToDataTable(sectorImpact);
     var sectorImpactOptions = {
       title: 'Average Impact by Sector',
+      //vAxis
       legend: { position: "none" }
     };
     var sectorImpactPieChart = new google.visualization.BarChart(document.getElementById("sectorimpactchart"));

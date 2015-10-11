@@ -9,6 +9,7 @@ body {
 .nav_container {
   width: 100%;  
   height: 50px;
+  position: fixed;
   background-color: #ffffff;
   z-index: 99;
 }
@@ -17,10 +18,12 @@ body {
   float: left;
 }
 
-.nav {
+.findID {
   float: right;
+}
+
+.nav {  
   font-size: 1em;
-  width: 458px;
   height: 30px;
   padding: 10px;
 }
@@ -31,16 +34,11 @@ body {
   margin: 5px;
 }
 
-#map {
-  width: 100%;
-}
-
 .chart_container{
 	position: relative;
 	width: 100%;
 	height-min: 500px;
 	padding-bottom: 56.25%;
-
 }
 .chart_container > div {
 	position: absolute;
