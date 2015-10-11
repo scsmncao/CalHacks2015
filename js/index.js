@@ -102,7 +102,7 @@ $(document).ready(function() {
 
     // country data
     $.ajax({
-        url:"https://www.quandl.com/api/v3/datasets/" + capitaCodes['codes'][loanCountry] + "/data.json?start_date=2000-01-01&order=asc",
+        url:"https://www.quandl.com/api/v3/datasets/" + capitaCodes['codes'][loanCountry] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
         success: function(result) {
           countryData = result['dataset_data']['data'];
         },
@@ -111,7 +111,7 @@ $(document).ready(function() {
 
     // world data
     $.ajax({
-        url:"https://www.quandl.com/api/v3/datasets/UN/NA_1_33/data.json?start_date=2000-01-01&order=asc",
+        url:"https://www.quandl.com/api/v3/datasets/UN/NA_1_33/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
         success: function(result) {
           worldData = result['dataset_data']['data'];
         },
