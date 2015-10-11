@@ -6,31 +6,42 @@ body {
   font-family: 'Lato', sans-serif;
 }
 
+a {
+  text-decoration: none;
+  color: #006600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 .nav_container {
+  position: absolute;
   width: 100%;  
   height: 50px;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, .9);
   z-index: 99;
 }
 
 .logo {
   float: left;
-  width: 33.3%;
 }
 
 .findID {
-  float: right;
-  width: 33.3%;
+  position: absolute;
+  top: -1;
+  right: 10;
   height: 30px;
-  padding: 10px 0;
+  padding: 17px 25px;
+  font-size: 10pt;
 }
 
 .nav {
-  float: left;
   font-size: 1em;
   height: 30px;
-  width: 33.3%;
+  width:362px;
   padding: 10px 0;
+  margin: 0 auto;
 }
 
 .nav_container img {
@@ -62,7 +73,34 @@ input:focus, select:focus, textarea:focus, button:focus {
   margin: 0 auto;
   padding: 4px 8px;
   border: 1px solid #ccc;
-  border-radius: 16px;
+  border-radius: 5px;
+  float:left;
+}
+
+.search_bar:focus {
+  border-color: #006600;
+  transition: border-color 1s;
+}
+
+.search {
+  height: 28px;
+  float:left;
+  width: 50px;
+  border: 1px solid #006600;
+  border-radius: 5px;
+  text-align: center;
+  margin-left: 10px;
+  font-size: 10pt;
+  vertical-align: middle;
+  line-height: 27px;
+  transition: .5s;
+}
+
+.search:hover {
+  background-color: #006600;
+  color: white;
+  cursor:pointer;
+  transition: .5s;
 }
 
 .info {

@@ -1,12 +1,21 @@
 google.load('visualization', '1', {'packages': ['geochart', 'corechart']});
 $(document).ready(function() {
+
+  $(".search").click(showLender);
+
+  $('.search_bar').keydown(function(event) {
+        if (event.keyCode == 13) {
+            showLender();
+            return false;
+         }
+    });
+
   $(".forcegraph").hide();
   $(".info").hide();
   google.setOnLoadCallback(drawMap);
   var chart;
   var data;
   var options;
-  document.getElementById("go").onclick = showLender;
   function drawMap() {
 
     data = new google.visualization.DataTable();
@@ -63,7 +72,6 @@ $(document).ready(function() {
     $(".right-col").append("<div class=\"user-info-line\">" + loan['use'] + "</div>");
     $(".right-col").append("<div class=\"user-info-line-bold\">Impact Rating: " + round(calculateImpact(loan)) + "</div>");
 
-    $(".forcegraph").show();
     $(".visualizations").empty();
     
     if (loan['sector'] == "Education") {
@@ -78,6 +86,7 @@ $(document).ready(function() {
     $(".visualizations").append("<div class=\"infotitle\"><h1>Key Economic Factor</h1></div>");
     $(".visualizations").append("<div class=\"infochart\" id=\"gnilinegraph\"></div>");
     generateUserGNILineGraph(result);
+    $(".forcegraph").show();
   }
 
   function generateUserGNILineGraph(result) {
@@ -86,9 +95,16 @@ $(document).ready(function() {
     data.addColumn('number', 'Country');
     data.addColumn('number', 'World');
 
-    var loanCountry = result['loans'][0]['location']['country'];
+    loanCountry = result['loans'][0]['location']['country_code'];
 
-    if (loanCountry == "United States") loanCountry = "America";
+    $.ajax({
+      url: "data/countryHash.json",
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        loanCountry = data[loanCountry]
+      }
+    });
 
     var capitaCodes = {};
 
@@ -143,8 +159,42 @@ $(document).ready(function() {
     data.addColumn('number', 'Country');
     data.addColumn('number', 'World');
 
-    for (i = 2000; i < 2015; i++) {
-      data.addRows([[i.toString(), Math.floor((Math.random() * 10) + 60), Math.floor((Math.random() * 10) + 70)]]);
+    var literacyCodes = {}
+
+    $.ajax({
+      url: "data/literacy_codes.json",
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        literacyCodes = data
+      }
+    });
+
+    var countryData = [];
+    var worldData = []
+
+    // country data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/" + literacyCodes['codes'][loanCountry] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+        success: function(result) {
+          countryData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+
+    // world data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/" + literacyCodes['codes']['World'] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+        success: function(result) {
+          worldData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+
+    for (i = 0; i < 14; i++) {
+      if (countryData[i] && worldData[i]) {
+        data.addRows([[(i + 2000).toString(), countryData[i][1], worldData[i][1]]]);
+      }
     }
 
     var options = {
@@ -164,9 +214,45 @@ $(document).ready(function() {
     data.addColumn('number', 'Country');
     data.addColumn('number', 'World');
 
-    for (i = 2000; i < 2015; i++) {
-      data.addRows([[i.toString(), (Math.random()+1) + 0.2, (Math.random() * 0.8) + 0.6]]);
+
+    var cerealCodes = {}
+
+    $.ajax({
+      url: "data/cereal_codes.json",
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        cerealCodes = data
+      }
+    });
+
+    var countryData = [];
+    var worldData = []
+
+    // country data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/" + cerealCodes['codes'][loanCountry] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+        success: function(result) {
+          countryData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+
+    // world data
+    $.ajax({
+        url:"https://www.quandl.com/api/v3/datasets/" + cerealCodes['codes']['World'] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+        success: function(result) {
+          worldData = result['dataset_data']['data'];
+        },
+        async: false
+      });
+
+    for (i = 0; i < 14; i++) {
+      if (countryData[i] && worldData[i]) {
+        data.addRows([[(i + 2000).toString(), countryData[i][1], worldData[i][1]]]);
+      }
     }
+
 
     var options = {
           title: 'Cereal Production per Capita vs. World Average',
@@ -181,7 +267,7 @@ $(document).ready(function() {
 
   function showLender() {
     var id = document.getElementById('id').value;
-
+    $(".info").show();
     $.ajax({
         url:"http://api.kivaws.org/v1/lenders/" + id.toString() + ".json",
         success: function(result) {
@@ -193,7 +279,6 @@ $(document).ready(function() {
         },
         async: false
       });
-    $(".info").show();
     $('html:not(:animated), body:not(:animated)').animate({
           scrollTop: $("#map").offset().top
       }, 750);
@@ -251,10 +336,73 @@ $(document).ready(function() {
     chart.draw(data, options);
   }
 
+  function getClosestDataPoint(loanYear, country, url) {
+    var closestDifference = 0
+    var closestYear = 0
+    var dataObj = {};
+
+    $.ajax({
+      url: url,
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        dataObj = data;
+      }
+    });
+
+    var countryData = [];
+    var worldData = [];
+
+    console.log(dataObj);
+
+    if (country in dataObj['codes']) {
+      // country data
+      $.ajax({
+          url:"https://www.quandl.com/api/v3/datasets/" + dataObj['codes'][country] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+          success: function(result) {
+            countryData = result['dataset_data']['data'];
+          },
+          async: false
+        });
+    }
+    $.ajax({
+      url:"https://www.quandl.com/api/v3/datasets/" + dataObj['codes']['World'] + "/data.json?api_key=933ptffRpv3GEuLyHnas&start_date=2000-01-01&order=asc",
+      success: function(result) {
+        countryData = result['dataset_data']['data'];
+      },
+      async: false
+    });
+    var closestDate = 100;
+    var closestNum = 0;
+    _.each(countryData, function(date) {
+      if (Math.abs(parseInt(date[0]) - parseInt(loanYear)) < closestDate) {
+        closestNum = Math.abs(parseInt(date[0]) - parseInt(loanYear));
+        closestDate = date[1];
+      }
+    });
+    return closestDate/3;
+  }
+
   function calculateImpact(loan) {
-    gniPerCapita = 1400;
-    gniScore = getScoreByBracket(gniPerCapita, [0, 1045, 4125, 12735], false);
-    gniImpact = Math.min((loan['loan_amount']/gniPerCapita) * gniScore, 5);
+    loanCountry = loan['location']['country_code'];
+    $.ajax({
+      url: "data/countryHash.json",
+      dataType: 'json',
+      async: false,
+      success: function(data) {
+        loanCountry = data[loanCountry]
+      }
+    });
+    console.log(loan);
+    if (loan['planned_expiration_date']) {
+      var loanYear = loan['planned_expiration_date'].split("-")[0];
+    }
+    else {
+      var loanYear = loan['posted_date'].split("-")[0];
+    }
+    var gniPerCapita = getClosestDataPoint(loanYear, loanCountry, "data/capita_codes.json")
+    var gniScore = getScoreByBracket(gniPerCapita, [0, 1045, 4125, 12735], false);
+    var gniImpact = Math.min((loan['loan_amount']/gniPerCapita) * gniScore, 5);
 
     sector = loan['sector'];
 
@@ -264,35 +412,35 @@ $(document).ready(function() {
       || sector == "Arts") {
       return gniImpact;
     } else if (sector == "Education") {
-        literacyRate = 69;
-        literacyScore = getScoreByBracket(literacyRate, [60, 80, 90, 97], false);
+        var literacyRate = getClosestDataPoint(loanYear, loanCountry, "data/literacy_codes.json");
+        var literacyScore = getScoreByBracket(literacyRate, [60, 80, 90, 97], false);
         return Math.min((loan['loan_amount']/gniPerCapita) * 2 * literacyScore, 5);
 
     } else if (sector == "Food") {
-      depthOfHunger = 200;
-      depthOfHungerScore = getScoreByBracket(depthOfHunger, [120, 180, 240, 300], true);
+      var depthOfHunger = 500;
+      var depthOfHungerScore = getScoreByBracket(depthOfHunger, [120, 180, 240, 300], true);
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * depthOfHungerScore, 5))/2;
 
     } else if (sector == "Health") {
-      lifeExpectancy = 60;
-      lifeExpectancyScore = getScoreByBracket(percentSanitation, [55, 61, 67, 73], false); 
+      var lifeExpectancy = getClosestDataPoint(loanYear, loanCountry, "data/life_expect_code.json");
+      var lifeExpectancyScore = getScoreByBracket(percentSanitation, [55, 61, 67, 73], false); 
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * lifeExpectancyScore, 5))/2;
 
     } else if (sector == "Transportation") {
-      carsPerThousand = 100;
-      transportationScore = getScoreByBracket(carsPerThousand, [68, 174, 352, 523], false); 
+      var carsPerThousand = getClosestDataPoint(loanYear, loanCountry, "data/cars.json");
+      var transportationScore = getScoreByBracket(carsPerThousand, [68, 174, 352, 523], false); 
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * transportationScore, 5))/2;
 
     } else if (sector == "Personal Use") {
-      percentSanitation = 0;
-      sanitationScore = getScoreByBracket(percentSanitation, [25, 43, 61, 79], false);
+      var percentSanitation = getClosestDataPoint(loanYear, loanCountry, "data/sanitation.json");
+      var sanitationScore = getScoreByBracket(percentSanitation, [25, 43, 61, 79], false);
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * sanitationScore, 5))/2;
 
     } else if (sector == "Agriculture") {
-      cerealProduction = 3400;
+      var cerealProduction = getClosestDataPoint(loanYear, loanCountry, "data/cereal_codes.json");
       population = 1000000;
-      prodPerPop = cerealProduction/population;
-      cerealScore = getScoreByBracket(prodPerPop, [0.4, 0.7, 1, 1.3], false);
+      var prodPerPop = cerealProduction/population;
+      var cerealScore = getScoreByBracket(prodPerPop, [0.4, 0.7, 1, 1.3], false);
       return (gniImpact + Math.min((loan['loan_amount']/gniPerCapita) * cerealScore, 5))/2;
 
     } else {
@@ -492,13 +640,6 @@ $(document).ready(function() {
   function round(num) {
     return Math.round(num * 100) / 100
   }
-
-  $('#id').keyup(function(event) {
-    if (event.keyCode == 13) {
-      showLender();
-      return false;
-    } return true;
-  });
 
   function displayImage(){
     $('.user-image').find('img').each(function(){
